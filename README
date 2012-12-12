@@ -1,0 +1,178 @@
+TableScript Alpha 5
+
+This is the fifth release of TableScript, and I think we're getting close to
+a beta...
+
+Building
+========
+
+Do a 'make' to build the interpreter (ts), then run a table:
+
+ts tablefile.ts
+
+State Of Things
+===============
+
+Memory management..
+The major problem remaining is the memory stuff. It's handled in some places,
+but neglected in others. The next step will be to standardize it across the
+code. Plus, I really need to sort out how external add-in modules are going to
+work. Expect that in the next release.
+
+Have a look in the tables directory for some examples of what you can do.
+
+Changes
+=======
+
+Beta 1
+- Imports are working. I thought they were before, but discovered the
+  translation wasn't hooked up. When I hooked it up, I realized that there
+  was a minor oversight (read: crash bug), in that imported functions were
+  getting deleted as soon as the import file was finished executing. Anyways,
+  importing should work just fine now - and you can use string formatting to
+  build the import filename (see below).
+- String formatting has been implemented. I had originally had it as a
+  seperate expression type, but decided it would be more flexible were it
+  added to the string literal interpreter.
+- The "in" operator is hooked up
+
+Alpha 5
+- Memory management is finally under control. The only time we should leak is
+  if the script contains circular references.
+
+	l1 = [];
+	l2 = [l1];
+	append(l1, l2]); // LEAK!
+- Tables now support an optional block of statements just prior to the first
+  entry. This code gets run each time the table is rolled (but not on a
+  lookup) immediately before evaluating the rolled table entry.
+- Tables now support direct lookups.
+
+	table lookupTable {
+		1:	("First")
+		2:	("Second")
+		3:	("Third")
+	}
+
+	for i in range(3) {
+		print(lookupTable[i + 1];
+	}
+
+  Tables are NOT zero-indexed like lists. Indicies are based entirely on the
+  entry definition.
+- Line numbers are now tracked nicely. You should get a reasonably intelligent
+  error message with an accurate line number.
+
+Alpha 4
+- Complex dice descriptors. You can now drop lowest and/or highest dice.
+  Thanks Tom for flushing it out!
+
+	4D6L1  => roll 4d6 and drop the 1 lowest die
+	9D6L3H3   => roll 9d6 and drop the 3 lowest and 3 highest dice
+
+- Maps are finally starting to work. Check out tables/elassign.ts to see what
+  you can do with them.
+- Added the keys() built-in function. It returns a list of keys in the passed
+  map.
+- Touched up the unary operations (+/-/!).
+
+Alpha 3
+- Table entries re-vamped. This is what is allowed:
+
+	table demo {
+		1:		// empty result
+		2:		("This is an expression.")
+		3:		("This is a pre-block expression.") {print("This is the block.");}
+		4:		{print("This is the block.");} ("This is a post-block expression.")
+		5:		{print("This is the block.");}
+	}
+
+   The previous version allowed an arbitrary list of expressions or blocks,
+   but that made the table result kind of complicated.
+- Built-in functions:
+
+	print(string);		=> prints the string
+	range(integer);		=> returns a list from 0 to integer - 1
+	len(list);			=> returns the number of elements in list
+	append(list,value);	=> appends value to the end of list
+	system(string);		=> launches the system command string
+	int(value);			=> cast to integer (not implemented?)
+	float(value);		=> cast to float (not implemented?)
+	str(value);			=> cast to string
+
+- ARGV is a global list of command line arguments.
+- ROLL is the actual roll value available in table scope.
+
+Alpha 2
+- ???
+
+Alpha 1
+- ???
+
+To Do (In no particular order)
+==============================
+
+1. Implement the "in" operator, as in:
+
+   i = 6;
+   if(i in [1,2,3,4,5,6]) {
+     print("This prints.");
+   } else {
+     print("This doesn't.");
+   }
+2. Sort out how we're going to do user modules.
+3. String formatting a la:
+
+   "this work's like %sin printf" % ["frick"]
+
+4. Somehow work it out so that we can mark a table as unique, making it
+   impossible to roll the same entry twice.
+5. Add a stack dump, again for context in error messages.
+6. List and string slices a la Python? Not sure if this is going to happen.
+
+1. User Modules
+
+This still has not been addressed, although I imagine it won't be long since
+I'm dropping the win32 support (I'll no longer have to worry about two types
+of library loading). If anyone has any good ideas, let me know.
+
+I have a feeling I'll have to add another keyword like "use" or something just
+to distinguish between importing another script file and loading a binary
+library.
+
+2. Interactive Mode
+
+I'm not sure this is necessary, but it would be handy for testing various
+bits.
+
+3. eval Builtin
+
+Again, not sure this is necessary. It will involve a change to the parser.
+I'll either have to change the runFile() to load the whole file into a string
+so that both runFile() and runString() can parser from a string in memory, or
+I'll have to have a switch in the lexx input function. I'm not sure which will
+be faster - probably the first.
+
+4. Rich Errors
+
+At present, when something goes wrong you get an error message with a line
+number. There's no indication to what file that line number applies. I'll need
+that, plus I have this stack of Frame objects all setup ready to be dumped. I
+just need to dump them.
+
+5. Unique Table Entries
+
+I'm pretty sure this is a reasonable requirement. It would be really nice if
+we could, when we go to roll, mark any table as unique. I'll look into it...
+Otherwise, you'll have to mark the table as unique at the definition and force
+every user to use it the same way. And that's not all that appealing.
+
+6. Ignored Rolls
+
+We definitely need to be able to support the "re-roll on this table ignoring
+rolls above 95". Not sure how to handle this.
+
+
+Enjoy!
+
+J

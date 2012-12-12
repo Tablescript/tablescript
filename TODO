@@ -1,0 +1,16 @@
+
+- Complete the user-module interface. Clean up the directory structure so that
+libs can be included.
+- Build a series of tables to be included as demos.
+- User docs.
+- Developer docs.
+- Implement the eval changes.
+- Make it so that a file run off the command line is taken as the full
+filename (tablefile.ts), but imports are done by module name - that is
+independent of the file extension. This will let binary modules be loaded.
+- Code documentation.
+
+- Fix map element assigns. += doesn't work.
+- Classes? Shouldn't be hard now.
+- Lambda operators would be really nice.
+
